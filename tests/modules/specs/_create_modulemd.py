@@ -8,8 +8,8 @@ import json
 import modulemd
 
 
-MODULES_DIR = os.path.join(os.path.dirname(__file__), "modules")
-SPECS_DIR = os.path.join(os.path.dirname(__file__), "specs")
+MODULES_DIR = os.path.join(os.path.dirname(__file__), "..", "modules")
+SPECS_DIR = os.path.join(os.path.dirname(__file__), "..", "specs")
 
 
 def parse_module_id(module_id):
