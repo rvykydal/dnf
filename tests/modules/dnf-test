@@ -4,7 +4,7 @@
 export LC_ALL=C
 
 
-if [ ! -f ../../bin/dnf-2 ]; then
+if [ ! -f ../../bin/dnf-2 -o ! -f ../../dnf/const.py -o ! -f etc/dnf/repos.d/test.repo ]; then
     echo
     echo 'DNF is not configured.'
     echo 'Go to the project top directory and run following commands first:'
