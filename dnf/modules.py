@@ -20,21 +20,21 @@ from __future__ import print_function
 import errno
 import fnmatch
 import gzip
-from dnf.pycomp import ConfigParser
-
-import smartcols
 import os
 from collections import OrderedDict
 
 import hawkey
 import modulemd
+import smartcols
 
 from dnf.callback import TransactionProgress, TRANS_POST, PKG_VERIFY
 from dnf.conf import ModuleConf
 from dnf.conf.read import ModuleReader, ModuleDefaultsReader
 from dnf.exceptions import Error
 from dnf.i18n import _
+from dnf.pycomp import ConfigParser
 from dnf.util import logger
+
 
 LOAD_CACHE_ERR = 1
 MISSING_YAML_ERR = 2
@@ -52,26 +52,26 @@ NOTHING_TO_SHOW = 13
 PARSING_ERR = 14
 HORRIBLE_HACK_WARN = 15
 
-module_errors = {LOAD_CACHE_ERR: "Cannot load from cache dir: {}",
-                 MISSING_YAML_ERR: "Missing file *modules.yaml in metadata cache dir: {}",
-                 NO_METADATA_ERR: "No available metadata for module: {}",
-                 NO_MODULE_OR_STREAM_ERR: "No such module: {} or active stream "
-                                          "(first enable stream)",
-                 NO_MODULE_ERR: "No such module: {}",
-                 NO_PROFILE_ERR: "No such profile: {}. Possible profiles: {}",
-                 NO_STREAM_ERR: "No such stream {} in {}",
-                 NO_ACTIVE_STREAM_ERR: "No active stream for module: {}",
-                 STREAM_NOT_ENABLED_ERR: "Stream not enabled. Skipping {}",
-                 DIFFERENT_STREAM_INFO: "Enabling different stream for {}",
-                 INVALID_MODULE_ERR: "Not a valid module: {}",
-                 LOWER_VERSION_INFO: "Using lower version due to missing "
-                                     "profile in latest version",
-                 NOTHING_TO_SHOW: "Nothing to show",
-                 PARSING_ERR: "Probable parsing problem of {}, "
-                              "try specifying MODULE-STREAM-VERSION",
-                 HORRIBLE_HACK_WARN: "DNF has made a horrible hack by guessing "
-                                     "default stream instead of using (non-existing) "
-                                     "system-profile"}
+
+module_errors = {
+    LOAD_CACHE_ERR: "Cannot load from cache dir: {}",
+    MISSING_YAML_ERR: "Missing file *modules.yaml in metadata cache dir: {}",
+    NO_METADATA_ERR: "No available metadata for module: {}",
+    NO_MODULE_OR_STREAM_ERR: "No such module: {} or active stream (enable a stream first)",
+    NO_MODULE_ERR: "No such module: {}",
+    NO_PROFILE_ERR: "No such profile: {}. Possible profiles: {}",
+    NO_STREAM_ERR: "No such stream {} in {}",
+    NO_ACTIVE_STREAM_ERR: "No active stream for module: {}",
+    STREAM_NOT_ENABLED_ERR: "Stream not enabled. Skipping {}",
+    DIFFERENT_STREAM_INFO: "Enabling different stream for {}",
+    INVALID_MODULE_ERR: "Not a valid module: {}",
+    LOWER_VERSION_INFO: "Using lower version due to missing profile in latest version",
+    NOTHING_TO_SHOW: "Nothing to show",
+    PARSING_ERR: "Probable parsing problem of {}, try specifying MODULE-STREAM-VERSION",
+    HORRIBLE_HACK_WARN: "DNF has made a horrible hack by guessing "
+                        "default stream instead of using (non-existing) "
+                        "system-profile"
+}
 
 default_profile = "default"
 name_profile_delimiter = "/"
@@ -306,7 +306,7 @@ class RepoModuleDict(OrderedDict):
                 logger.error(module_errors[NO_MODULE_ERR].format(name))
                 continue
 
-            any_profile_installed = self[name].conf and len(self[name].conf.profiles) != 0
+            any_profile_installed = self[name].conf and self[name].conf.profiles
             if not any_profile_installed:
                 continue
 
@@ -336,9 +336,7 @@ class RepoModuleDict(OrderedDict):
                 logger.debug("No module named {}, skipping.".format(conf.name))
 
     def get_modules_dir(self):
-        modules_dir = self.base.conf.installroot
-        for dir in self.base.conf.modulesdir.split("/"):
-            modules_dir = os.path.join(modules_dir, dir)
+        modules_dir = os.path.join(self.base.conf.installroot, self.base.conf.modulesdir.lstrip("/"))
 
         if not os.path.exists(modules_dir):
             self.create_dir(modules_dir)
@@ -361,7 +359,7 @@ class RepoModuleDict(OrderedDict):
 
     def get_modules_by_name_stream_version(self, name, stream=None, version=None):
         filtered_names = fnmatch.filter(self, name)
-        if len(filtered_names) == 0:
+        if not filtered_names:
             raise Error(module_errors[NO_MODULE_ERR].format(name))
 
         filtered_streams = []
@@ -370,7 +368,7 @@ class RepoModuleDict(OrderedDict):
             for filtered_name in filtered_names:
                 filtered_streams.extend(fnmatch.filter(self[filtered_name], stream))
 
-        if len(filtered_streams) == 0:
+        if not filtered_streams:
             for filtered_name in filtered_names:
                 filtered_streams.extend(list(self[filtered_name].keys()))
 
@@ -382,7 +380,7 @@ class RepoModuleDict(OrderedDict):
                     elif fnmatch.fnmatch(str(module_version.version), version):
                         module_metadata.append(module_version.module_metadata)
 
-        if len(module_metadata) == 0:
+        if not module_metadata:
             raise Error(module_errors[NO_METADATA_ERR].format(name))
 
         return module_metadata
@@ -426,7 +424,7 @@ class RepoModuleDict(OrderedDict):
                                                   True)
 
     def get_brief_description_by_name(self, module_n, repo_module_streams, only_installed=False):
-        if module_n is None or len(module_n) == 0:
+        if module_n is None or not module_n:
             return self._get_brief_description(repo_module_streams, only_installed)
         else:
             return self._get_brief_description([stream for stream in repo_module_streams
@@ -448,7 +446,7 @@ class RepoModuleDict(OrderedDict):
                     only_installed_versions.append(i)
             repo_module_versions = only_installed_versions
 
-        if len(repo_module_versions) == 0:
+        if not repo_module_versions:
             return module_errors[NOTHING_TO_SHOW]
 
         table = smartcols.Table()
@@ -499,7 +497,7 @@ class RepoModuleDict(OrderedDict):
                 line_without_crlf = line[:-1]
                 return line_without_crlf.lower().split("=")
 
-            values = dict()
+            values = {}
             with open("/etc/os-release") as f:
                 for line in f.readlines():
                     option, value = get_split_lower_values(line)
@@ -558,7 +556,7 @@ class ModuleMetadataLoader(object):
         modules_yaml_gz = list(filter(lambda repodata_file: 'modules' in repodata_file,
                                       content_of_cachedir))
 
-        if len(modules_yaml_gz) == 0:
+        if not modules_yaml_gz:
             raise Error(module_errors[MISSING_YAML_ERR].format(self.repo._cachedir))
         modules_yaml_gz = "{}/repodata/{}".format(self.repo._cachedir, modules_yaml_gz[0])
 
@@ -570,6 +568,7 @@ class ModuleMetadataLoader(object):
 
 class ModuleTransactionProgress(TransactionProgress):
     def __init__(self):
+        super(ModuleTransactionProgress, self).__init__()
         self.repo_modules = []
         self.saved = False
 
