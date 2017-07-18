@@ -179,8 +179,8 @@ class ModuleDefaultsReader(ModuleReader):
                 for module_conf in self._get_module_configs(module_path):
                     yield module_conf
             except dnf.exceptions.ConfigError:
-                logger.warning(_("Warning: failed loading '%s', defaults unavailable."),
-                               module_path)
+                logger.debug(_("Warning: failed loading '%s', defaults unavailable."),
+                             module_path)
                 raise
 
     def _build_module(self, parser, id_, defaults_path):
