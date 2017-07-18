@@ -34,3 +34,5 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/bin/dnf.in ${CMAKE_SOURCE_DIR}/bin/dnf-${PYTH
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/bin/dnf-automatic.in ${CMAKE_SOURCE_DIR}/bin/dnf-automatic-${PYTHON_DESIRED} @ONLY)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/bin/yum.in ${CMAKE_SOURCE_DIR}/bin/yum-${PYTHON_DESIRED} @ONLY)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/dnf/const.py.in ${CMAKE_SOURCE_DIR}/dnf/const.py @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/modules/etc/dnf/repos.d/test.repo.in ${CMAKE_SOURCE_DIR}/tests/modules/etc/dnf/repos.d/test.repo @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/modules/etc/dnf/dnf.conf.in ${CMAKE_SOURCE_DIR}/tests/modules/etc/dnf/dnf.conf @ONLY)
