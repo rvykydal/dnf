@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 
@@ -29,7 +28,7 @@ import modulemd
 
 import dnf.conf
 from dnf.conf import ModuleDefaultsConf
-from dnf.modules import RepoModuleDict, RepoModule, RepoModuleStream, RepoModuleVersion
+from dnf.modules import RepoModuleDict, RepoModuleVersion
 from dnf.modules import ModuleSubject, NSVAP
 
 
@@ -277,7 +276,7 @@ class ModuleTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix = "dnf_test_")
+        self.tmpdir = tempfile.mkdtemp(prefix="dnf_test_")
         self.conf = dnf.conf.Conf()
         self.conf.cachedir = os.path.join(self.tmpdir, "cache")
         self.conf.installroot = os.path.join(self.tmpdir, "root")
