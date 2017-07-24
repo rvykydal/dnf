@@ -31,10 +31,9 @@ from dnf.callback import TransactionProgress, TRANS_POST, PKG_VERIFY
 from dnf.conf import ModuleConf
 from dnf.conf.read import ModuleReader, ModuleDefaultsReader
 from dnf.exceptions import Error
-from dnf.i18n import _
 from dnf.pycomp import ConfigParser
 from dnf.subject import Subject
-from dnf.util import logger, first, first_not_none
+from dnf.util import logger, first_not_none
 
 LOAD_CACHE_ERR = 1
 MISSING_YAML_ERR = 2
