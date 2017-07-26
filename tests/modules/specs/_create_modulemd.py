@@ -29,8 +29,19 @@ for module_id in os.listdir(MODULES_DIR):
         profiles = {}
 
     for arch in os.listdir(os.path.join(MODULES_DIR, module_id)):
+        if arch == "noarch":
+            continue
+
         module_dir = os.path.join(MODULES_DIR, module_id, arch)
         rpms = [i for i in os.listdir(module_dir) if i.endswith(".rpm")]
+
+        noarch_module_dir = os.path.join(MODULES_DIR, module_id, "noarch")
+        if os.path.isdir(noarch_module_dir):
+            noarch_rpms = [i for i in os.listdir(noarch_module_dir) if i.endswith(".rpm")]
+        else:
+            noarch_rpms = []
+
+        rpms = sorted(set(rpms) | set(noarch_rpms))
 
         mmd = modulemd.ModuleMetadata()
         mmd.name = name
