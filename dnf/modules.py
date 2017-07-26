@@ -93,14 +93,14 @@ class RepoModuleVersion(object):
 
         self.repo_module.installed_repo_module_version = self
         self.repo_module.installed_profiles.append(profile)
-        self.repo_module.parent.transaction_callback.repo_modules.append(repo_module)
+        self.repo_module.parent.transaction_callback.repo_modules.append(self.repo_module)
 
         for single_nevra in self.profile_nevra(profile):
             self.base.install(single_nevra, reponame=self.repo.id, forms=hawkey.FORM_NEVR)
 
     def upgrade(self, profiles):
         self.repo_module.installed_repo_module_version = self
-        self.repo_module.parent.transaction_callback.repo_modules.append(repo_module)
+        self.repo_module.parent.transaction_callback.repo_modules.append(self.repo_module)
         for profile in profiles:
             if profile not in self.profiles:
                 raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
