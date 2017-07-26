@@ -17,12 +17,12 @@
 
 from __future__ import print_function
 
-import errno
 import fnmatch
 import gzip
 import os
 from collections import OrderedDict
 
+import dnf
 import hawkey
 import modulemd
 import smartcols
@@ -77,6 +77,7 @@ class RepoModuleVersion(object):
         self.repo = repo
         self.base = base
         self.parent = None
+        self.repo_module = None
 
     def __lt__(self, other):
         # for finding latest
@@ -90,18 +91,16 @@ class RepoModuleVersion(object):
         if profile not in self.profiles:
             raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
 
-        repo_module = self.parent.parent
-        repo_module.installed_repo_module_version = self
-        repo_module.installed_profiles.append(profile)
-        repo_module.parent.transaction_callback.repo_modules.append(repo_module)
+        self.repo_module.installed_repo_module_version = self
+        self.repo_module.installed_profiles.append(profile)
+        self.repo_module.parent.transaction_callback.repo_modules.append(repo_module)
 
         for single_nevra in self.profile_nevra(profile):
             self.base.install(single_nevra, reponame=self.repo.id, forms=hawkey.FORM_NEVR)
 
     def upgrade(self, profiles):
-        repo_module = self.parent.parent
-        repo_module.installed_repo_module_version = self
-        repo_module.parent.transaction_callback.repo_modules.append(repo_module)
+        self.repo_module.installed_repo_module_version = self
+        self.repo_module.parent.transaction_callback.repo_modules.append(repo_module)
         for profile in profiles:
             if profile not in self.profiles:
                 raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
@@ -117,10 +116,10 @@ class RepoModuleVersion(object):
             if profile not in self.profiles:
                 raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
 
-            remove_query = self.base.sack.query()
             for single_nevra in self.profile_nevra(profile):
-                remove_query = remove_query.filter(nevra=single_nevra)
-            self.base._remove_if_unneeded(remove_query)
+                remove_query = dnf.subject.Subject(single_nevra) \
+                    .get_best_query(self.base.sack, forms=hawkey.FORM_NEVR)
+                self.base._remove_if_unneeded(remove_query)
 
     def nevra(self):
         result = self.module_metadata.artifacts.rpms
@@ -218,6 +217,7 @@ class RepoModule(OrderedDict):
         module_stream.parent = self
 
         self.name = repo_module_version.name
+        repo_module_version.repo_module = self
 
     def enable(self, stream, assumeyes, assumeno):
         if stream not in self:
@@ -425,24 +425,11 @@ class RepoModuleDict(OrderedDict):
         modules_dir = os.path.join(self.base.conf.installroot,
                                    self.base.conf.modulesdir.lstrip("/"))
 
-        if not os.path.exists(modules_dir):
-            self.create_dir(modules_dir)
-
+        ensure_dir(modules_dir)
         return modules_dir
 
     def get_module_defaults_dir(self):
         return self.base.conf.moduledefaultsdir
-
-    @staticmethod
-    def create_dir(output_file):
-        oumask = os.umask(0o22)
-        try:
-            os.makedirs(output_file)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-        finally:
-            os.umask(oumask)
 
     def get_full_description(self, pkg_spec):
         subj = ModuleSubject(pkg_spec)
@@ -620,13 +607,10 @@ class ModuleTransactionProgress(TransactionProgress):
     @staticmethod
     def remove(repo_module):
         conf = repo_module.conf
+        conf.profiles = [x for x in conf.profiles if x not in repo_module.removed_profiles]
 
-        profiles = conf.profiles
-        profiles.remove(repo_module.removed_profiles)
-        conf.profiles = sorted(set(profiles))
-
-        if len(profiles) == 0:
-            conf.version = ""
+        if len(conf.profiles) == 0:
+            conf.version = -1
 
 
 NSVAP_FIELDS = ["name", "stream", "version", "arch", "profile"]
