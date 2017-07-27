@@ -1,6 +1,6 @@
 Name:           httpd
 Version:        2.4.25
-Release:        7
+Release:        8
 License:        LGPLv2
 Summary:        Fake package
 
