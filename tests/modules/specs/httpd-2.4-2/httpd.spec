@@ -1,6 +1,6 @@
 Name:           httpd
 Version:        2.4.25
-Release:        8
+Release:        7
 License:        LGPLv2
 Summary:        Fake package
 
@@ -8,6 +8,12 @@ Requires:       glibc
 Requires:       libnghttp2
 
 %description
+Fake package
+
+%package doc
+Summary:        Fake package
+
+%description doc
 Fake package
 
 %package debuginfo
@@ -36,6 +42,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %files
+%files doc
 %files debuginfo
 
 
