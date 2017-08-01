@@ -197,7 +197,7 @@ class _Handle(librepo.Handle):
         self.useragent = dnf.const.USER_AGENT
         self.maxparalleldownloads = max_parallel_downloads
         self.yumdlist = [
-            "primary", "filelists", "prestodelta", "group_gz", "updateinfo", "modules"]
+            "primary", "filelists", "prestodelta", "group_gz", "updateinfo", "modules", "modules-profiles"]
         self.yumslist = [('group_gz', 'group')]
 
     def __str__(self):

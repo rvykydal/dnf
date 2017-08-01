@@ -25,7 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from dnf.comps import CompsQuery
 from dnf.i18n import _, P_, ucd
-from dnf.modules import RepoModuleDict, RepoModuleVersion, ModuleMetadataLoader
+from dnf.modules import RepoModuleDict, RepoModuleVersion, ModuleMetadataLoader, ModuleProfileMetadataLoader, latest
 from dnf.util import first
 from dnf.yum import history
 from dnf.yum import misc
@@ -180,6 +180,17 @@ class Base(object):
                     self.repo_module_dict.add(RepoModuleVersion(data, base=self, repo=repo))
             except dnf.exceptions.Error:
                 continue
+
+        module_profile_list = []
+        for repo in self.repos.iter_enabled():
+            try:
+                module_profile_metadata = ModuleProfileMetadataLoader(repo).load()
+                module_profile_list.extend(module_profile_metadata)
+            except dnf.exceptions.Error:
+                continue
+
+        latest_profiles = latest(module_profile_list)
+        self.repo_module_dict.profiles = latest_profiles
 
         self.repo_module_dict.read_all_modules()
         self.repo_module_dict.read_all_module_defaults()
