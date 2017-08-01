@@ -259,16 +259,6 @@ ln -sr  %{buildroot}%{_bindir}/dnf-2 %{buildroot}%{_bindir}/yum
 %endif
 rm -vf %{buildroot}%{_bindir}/dnf-automatic-*
 
-%check
-pushd build
-  ctest -VV
-popd
-%if %{with python3}
-pushd build-py3
-  ctest -VV
-popd
-%endif
-
 %post
 %systemd_post dnf-makecache.timer
 
