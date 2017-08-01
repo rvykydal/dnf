@@ -1,0 +1,10 @@
+To add installation profiles to Boltron repos do following:
+
+Use a Boltron docker image or any other installation with
+repo baseurl pointing to:
+https://download.fedoraproject.org/pub/alt/unofficial/releases/26/Server/$basearch/os/
+
+Put this repo somewhere and create a repofile pointing to it in /etc/yum.repos.d.
+
+DNF will automatically merge Boltron module metadata with installation profiles.
+

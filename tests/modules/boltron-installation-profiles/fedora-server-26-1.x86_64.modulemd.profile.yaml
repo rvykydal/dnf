@@ -1,0 +1,154 @@
+data:
+  arch: x86_64
+  description: Fedora 26 Server
+  modules:
+    base-runtime:
+      available-streams: [f26]
+      default: true
+      default-profiles:
+        f26: [container]
+      default-stream: f26
+    container-runtime:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    dhcp:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    dhcp-server:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    dnf:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    haproxy:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    httpd:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    installer:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: []
+      default-stream: f26
+    mariadb:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [client, default, server]
+      default-stream: f26
+    memcached:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    mongodb:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [client, default, server]
+      default-stream: f26
+    nginx:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    nodejs:
+      available-streams: [f26, '8']
+      default: false
+      default-profiles:
+        f26: [default]
+        '8': [default]
+      default-stream: f26
+    perl:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    perl-Unicode-EastAsianWidth:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: []
+      default-stream: f26
+    php:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    postfix:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    postgresql:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    shared-userspace:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    shim:
+      available-streams: [master]
+      default: false
+      default-profiles:
+        master: []
+      default-stream: master
+    source-to-image:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    sssd:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    systemtools:
+      available-streams: [f26]
+      default: true
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    varnish:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+  name: fedora-server
+  release: 1
+  version: '26'
+document: modulemd-profile
+version: 0

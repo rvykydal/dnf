@@ -1,0 +1,39 @@
+data:
+  arch: x86_64
+  description: Fedora 26 Workstation
+  modules:
+    base-runtime:
+      available-streams: [f26]
+      default: true
+      default-profiles:
+        f26: [container]
+      default-stream: f26
+    dnf:
+      available-streams: [f26]
+      default: true
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+    mariadb:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [client]
+      default-stream: f26
+    postgresql:
+      available-streams: [f26]
+      default: false
+      default-profiles:
+        f26: [client]
+      default-stream: f26
+    systemtools:
+      available-streams: [f26]
+      default: true
+      default-profiles:
+        f26: [default]
+      default-stream: f26
+  name: fedora-workstation
+  release: 1
+  version: '26'
+document: modulemd-profile
+version: 0

@@ -25,7 +25,9 @@ from collections import OrderedDict
 import dnf
 import hawkey
 import modulemd
+import modulemd_profile
 import smartcols
+from modulemd_profile import latest
 
 from dnf.conf import ModuleConf
 from dnf.conf.read import ModuleReader, ModuleDefaultsReader
@@ -673,22 +675,42 @@ class ModuleMetadataLoader(object):
     def __init__(self, repo=None):
         self.repo = repo
 
+    @property
+    def _metadata_fn(self):
+        return self.repo.metadata._repo_dct.get("modules")
+
     def load(self):
         if self.repo is None:
             raise Error(module_errors[LOAD_CACHE_ERR].format(self.repo))
 
-        content_of_cachedir = os.listdir(self.repo._cachedir + "/repodata")
-        modules_yaml_gz = list(filter(lambda repodata_file: 'modules' in repodata_file,
-                                      content_of_cachedir))
-
-        if not modules_yaml_gz:
+        if not self._metadata_fn:
             raise Error(module_errors[MISSING_YAML_ERR].format(self.repo._cachedir))
-        modules_yaml_gz = "{}/repodata/{}".format(self.repo._cachedir, modules_yaml_gz[0])
 
-        with gzip.open(modules_yaml_gz, "r") as extracted_modules_yaml_gz:
-            modules_yaml = extracted_modules_yaml_gz.read()
+        with gzip.open(self._metadata_fn, "r") as modules_yaml_gz:
+            modules_yaml = modules_yaml_gz.read()
 
         return modulemd.loads_all(modules_yaml)
+
+
+class ModuleProfileMetadataLoader(object):
+    def __init__(self, repo=None):
+        self.repo = repo
+
+    @property
+    def _metadata_fn(self):
+        return self.repo.metadata._repo_dct.get("modules-profiles")
+
+    def load(self):
+        if self.repo is None:
+            raise Error(module_errors[LOAD_CACHE_ERR].format(self.repo))
+
+        if not self._metadata_fn:
+            raise Error(module_errors[MISSING_YAML_ERR].format(self.repo._cachedir))
+
+        with gzip.open(self._metadata_fn, "r") as modules_profiles_yaml_gz:
+            modules_profiles_yaml = modules_profiles_yaml_gz.read()
+
+        return modulemd_profile.loads_all(modules_profiles_yaml)
 
 
 NSVAP_FIELDS = ["name", "stream", "version", "arch", "profile"]
