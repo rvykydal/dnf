@@ -90,21 +90,18 @@ class RepoModuleVersion(object):
         return self.full_version
 
     def install(self, profiles):
-        self.repo_module.installed_repo_module_version = self
-        self.repo_module.parent.transaction_callback.repo_modules.append(self.repo_module)
-
         for profile in profiles:
             if profile not in self.profiles:
                 raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
 
-            self.repo_module.installed_profiles.append(profile)
-
             for single_nevra in self.profile_nevra(profile):
                 self.base.install(single_nevra, reponame=self.repo.id, forms=hawkey.FORM_NEVR)
 
+        profiles.extend(self.repo_module.conf.profiles)
+        self.base._module_persistor.set_data(self.repo_module, stream=self.stream,
+                                             version=self.version, profiles=sorted(set(profiles)))
+
     def upgrade(self, profiles):
-        self.repo_module.installed_repo_module_version = self
-        self.repo_module.parent.transaction_callback.repo_modules.append(self.repo_module)
         for profile in profiles:
             if profile not in self.profiles:
                 raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
@@ -112,11 +109,11 @@ class RepoModuleVersion(object):
             for single_nevra in self.profile_nevra(profile):
                 self.base.upgrade(single_nevra, reponame=self.repo.id)
 
+        self.base._module_persistor.set_data(self.repo_module, stream=self.stream,
+                                             version=self.version)
+
     def remove(self, profiles):
         for profile in profiles:
-            self.parent.parent.removed_repo_module_version = self
-            self.parent.parent.removed_profiles.append(profile)
-
             if profile not in self.profiles:
                 raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
 
@@ -124,6 +121,16 @@ class RepoModuleVersion(object):
                 remove_query = dnf.subject.Subject(single_nevra) \
                     .get_best_query(self.base.sack, forms=hawkey.FORM_NEVR)
                 self.base._remove_if_unneeded(remove_query)
+
+        conf = self.repo_module.conf
+        version = conf.version
+        profiles = [x for x in conf.profiles if x not in profiles]
+
+        if len(conf.profiles) == 0:
+            conf.version = -1
+
+        self.base._module_persistor.set_data(self.repo_module, stream=self.stream, version=version,
+                                             profiles=sorted(set(profiles)))
 
     def nevra(self):
         result = self.module_metadata.artifacts.rpms
@@ -196,10 +203,6 @@ class RepoModule(OrderedDict):
         self.defaults = None
         self.name = None
         self.parent = None
-        self.installed_profiles = []
-        self.installed_repo_module_version = None
-        self.removed_profiles = []
-        self.removed_repo_module_version = None
 
     @property
     def conf(self):
@@ -265,7 +268,6 @@ class RepoModuleDict(OrderedDict):
         super(RepoModuleDict, self).__init__()
 
         self.base = base
-        self.transaction_callback = ModuleTransactionProgress()
 
     def add(self, repo_module_version):
         module = self.setdefault(repo_module_version.name, RepoModule())
@@ -390,7 +392,7 @@ class RepoModuleDict(OrderedDict):
 
             if module_version.version > module_version.repo_module.conf.version:
                 profiles.extend(module_version.repo_module.conf.profiles)
-                profiles = set(profiles)
+                profiles = list(set(profiles))
 
             module_version.install(profiles)
 
@@ -449,7 +451,6 @@ class RepoModuleDict(OrderedDict):
             else:
                 profiles = installed_profiles
 
-            self.transaction_callback.repo_modules.append(self[nsvap.name])
             module_version.remove(profiles)
 
     def load_modules(self, repo):
@@ -782,3 +783,24 @@ class ModuleSubject(object):
                 result = (module_version, nsvap)
                 break
         return result
+
+
+class ModulePersistor(object):
+
+    def __init__(self):
+        self.repo_modules = []
+
+    def set_data(self, repo_module, **kwargs):
+        self.repo_modules.append(repo_module)
+        for name, value in kwargs.items():
+            setattr(repo_module.conf, name, value)
+
+    def save(self):
+        for repo_module in self.repo_modules:
+            repo_module.write_conf_to_file()
+
+        return True
+
+    def reset(self):
+        # read configs from disk
+        pass
