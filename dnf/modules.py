@@ -656,45 +656,6 @@ class ModuleMetadataLoader(object):
         return modulemd.loads_all(modules_yaml)
 
 
-class ModuleTransactionProgress(TransactionProgress):
-    def __init__(self):
-        super(ModuleTransactionProgress, self).__init__()
-        self.repo_modules = []
-        self.saved = False
-
-    def progress(self, package, action, ti_done, ti_total, ts_done, ts_total):
-        if not self.saved and (action == TRANS_POST or action == PKG_VERIFY):
-            self.saved = True
-            for repo_module in self.repo_modules:
-
-                if repo_module.removed_repo_module_version:
-                    self.remove(repo_module)
-
-                if repo_module.installed_repo_module_version:
-                    self.add(repo_module)
-
-                repo_module.write_conf_to_file()
-
-    @staticmethod
-    def add(repo_module):
-        conf = repo_module.conf
-        conf.version = repo_module.installed_repo_module_version.version
-
-        profiles = repo_module.installed_profiles
-        profiles.extend(conf.profiles)
-        conf.profiles = sorted(set(profiles))
-
-        repo_module.write_conf_to_file()
-
-    @staticmethod
-    def remove(repo_module):
-        conf = repo_module.conf
-        conf.profiles = [x for x in conf.profiles if x not in repo_module.removed_profiles]
-
-        if len(conf.profiles) == 0:
-            conf.version = -1
-
-
 NSVAP_FIELDS = ["name", "stream", "version", "arch", "profile"]
 
 
