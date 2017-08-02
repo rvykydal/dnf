@@ -67,6 +67,9 @@ import re
 import rpm
 import time
 import shutil
+# TODO: move outside DNF
+import dnf.modulemd_profile
+
 
 logger = logging.getLogger("dnf")
 
@@ -191,7 +194,7 @@ class Base(object):
             except dnf.exceptions.Error:
                 continue
 
-        latest_profiles = latest(module_profile_list)
+        latest_profiles = dnf.modulemd_profile.latest(module_profile_list)
         self.repo_module_dict.profiles = latest_profiles
 
         self.repo_module_dict.read_all_modules()

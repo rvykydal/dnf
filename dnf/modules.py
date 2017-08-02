@@ -25,9 +25,9 @@ from collections import OrderedDict
 import dnf
 import hawkey
 import modulemd
-import modulemd_profile
+# TODO: move outside DNF
+import dnf.modulemd_profile
 import smartcols
-from modulemd_profile import latest
 
 from dnf.conf import ModuleConf
 from dnf.conf.read import ModuleReader, ModuleDefaultsReader
@@ -710,7 +710,7 @@ class ModuleProfileMetadataLoader(object):
         with gzip.open(self._metadata_fn, "r") as modules_profiles_yaml_gz:
             modules_profiles_yaml = modules_profiles_yaml_gz.read()
 
-        return modulemd_profile.loads_all(modules_profiles_yaml)
+        return dnf.modulemd_profile.loads_all(modules_profiles_yaml)
 
 
 NSVAP_FIELDS = ["name", "stream", "version", "arch", "profile"]
