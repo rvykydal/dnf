@@ -27,7 +27,6 @@ import hawkey
 import modulemd
 import smartcols
 
-from dnf.callback import TransactionProgress, TRANS_POST, PKG_VERIFY
 from dnf.conf import ModuleConf
 from dnf.conf.read import ModuleReader, ModuleDefaultsReader
 from dnf.exceptions import Error
