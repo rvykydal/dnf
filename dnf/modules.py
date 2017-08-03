@@ -704,15 +704,20 @@ class ModuleMetadataLoader(object):
         return self.repo.metadata._repo_dct.get("modules")
 
     def load(self):
+        """
+        HACK: Side effect: set repo.modules = <bool> according to if module metadata was found in the repo
+        """
         if self.repo is None:
             raise Error(module_errors[LOAD_CACHE_ERR].format(self.repo))
 
+        repo.modules = False
         if not self._metadata_fn:
             raise Error(module_errors[MISSING_YAML_ERR].format(self.repo._cachedir))
 
         with gzip.open(self._metadata_fn, "r") as modules_yaml_gz:
             modules_yaml = modules_yaml_gz.read()
 
+        repo.modules = True
         return modulemd.loads_all(modules_yaml)
 
 
