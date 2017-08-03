@@ -25,7 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from dnf.comps import CompsQuery
 from dnf.i18n import _, P_, ucd
-from dnf.modules import RepoModuleDict, RepoModuleVersion, ModuleMetadataLoader, ModulePersistor
+from dnf.modules import RepoModuleDict, RepoModuleVersion, ModuleMetadataLoader, ModuleProfileMetadataLoader, ModulePersistor
 from dnf.util import first
 from dnf.yum import history
 from dnf.yum import misc

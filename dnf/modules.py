@@ -272,6 +272,8 @@ class RepoModuleDict(OrderedDict):
         super(RepoModuleDict, self).__init__()
 
         self.base = base
+        self.profiles = []
+        self.selected_profile = None
 
     def add(self, repo_module_version):
         module = self.setdefault(repo_module_version.name, RepoModule())
@@ -289,12 +291,27 @@ class RepoModuleDict(OrderedDict):
                 return repo_module.defaults.stream
             return None
 
+        def use_selected_profile_default_stream(repo_module):
+            if not self.selected_profile:
+                return None
+
+            name = repo_module.name
+            default = self.selected_profile.get(name, None)
+            if not default:
+                return None
+
+            if default.default_stream:
+                return default.default_stream
+
+            return None
+
         try:
             repo_module = self[name]
 
             stream = first_not_none([stream,
                                      use_enabled_stream(repo_module),
-                                     use_default_stream(repo_module)])
+                                     use_default_stream(repo_module),
+                                     use_selected_profile_default_stream(repo_module)])
 
             repo_module_stream = repo_module[stream]
 
@@ -393,9 +410,16 @@ class RepoModuleDict(OrderedDict):
                 elif not self[nsvap.name].conf.enabled:
                     raise Error(module_errors[NO_ACTIVE_STREAM_ERR].format(module_version.name))
 
+                default = self.selected_profile and self.selected_profile.get(module_version.name, None) or None
+
                 if nsvap.profile:
+                    # specified profile
                     profiles = [nsvap.profile]
+                elif default and default.default_profiles.get(module_version.stream):
+                    # installation profile
+                    profiles = list(default.default_profiles[module_version.stream])
                 else:
+                    # system defaults
                     profiles = module_version.repo_module.defaults.profiles
 
                 if module_version.version > module_version.repo_module.conf.version:

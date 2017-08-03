@@ -30,6 +30,7 @@ import dnf.conf
 from dnf.conf import ModuleDefaultsConf
 from dnf.modules import RepoModuleDict, RepoModuleVersion
 from dnf.modules import ModuleSubject, NSVAP
+from dnf.modulemd_profile import InstallationProfile, ModuleDefaults
 
 
 MODULES_DIR = os.path.join(os.path.dirname(__file__), "modules/etc/dnf/modules.d")
@@ -682,3 +683,39 @@ class ModuleTest(unittest.TestCase):
 
     def test_remove_invalid(self):
         pass
+
+
+    def test_installation_profile_defaults(self):
+        server = InstallationProfile()
+        server.name = "fedora-server"
+        server.version = "26"
+        server.release = 5
+        server.arch = "x86_64"
+        server.description = "Fedora 26 Server"
+
+        d = ModuleDefaults()
+        d.module_name = "httpd"
+        d.default = True
+        d.available_streams.extend(["2.2", "2.4"])
+        d.default_stream = "2.2"
+        d.default_profiles.set("2.2", ["default", "doc"])
+        d.default_profiles.set("2.4", [])
+        server.add_module_defaults(d)
+
+        # set installation profile defaults
+        self.base.repo_module_dict.selected_profile = server
+
+        # disable system defaults as they normally override installation profile
+        self.base.repo_module_dict["httpd"].defaults = None
+
+        self.base.repo_module_dict.install(["httpd"], autoenable=True)
+        self.base._goal.run()
+        expected = [
+            "basesystem-11-3.noarch",
+            "filesystem-3.2-40.x86_64",
+            "glibc-2.25.90-2.x86_64",
+            "glibc-common-2.25.90-2.x86_64",
+            "httpd-2.2.15-59.x86_64",
+            "httpd-doc-2.2.15-59.x86_64",
+        ]
+        self.assertInstalls(expected)
